@@ -6,14 +6,18 @@ use sqlx::postgres::PgPoolOptions;
 use crate::routers::{course_routes, general_routes};
 use crate::state::AppState;
 
-#[path = "../handlers.rs"]
+#[path = "../dbaccess/mod.rs"]
+mod dbaccess;
+#[path = "../handlers/mod.rs"]
 mod handlers;
 #[path = "../routers.rs"]
 mod routers;
 #[path = "../state.rs"]
 mod state;
-#[path = "../models.rs"]
+#[path = "../models/mod.rs"]
 mod models;
+#[path = "../errors.rs"]
+mod errors;
 
 #[actix_rt::main]
 async fn main() -> io::Result<()> {
