@@ -8,6 +8,7 @@ pub enum MyError {
     DBError(String),
     ActixError(String),
     NotFoundError(String),
+    InvalidInput(String),
 }
 
 #[derive(Debug, Serialize)]
@@ -29,7 +30,11 @@ impl MyError {
             MyError::NotFoundError(msg) => {
                 println!("Not found error occurred: {:?}", msg);
                 msg.into()
-            },
+            }
+            MyError::InvalidInput(msg) => {
+                println!("invalid params received: {:?}", msg);
+                msg.into()
+            }
         }
     }
 }
@@ -40,13 +45,13 @@ impl Display for MyError {
     }
 }
 
-impl From<actix_web::Error> for MyError{
+impl From<actix_web::Error> for MyError {
     fn from(error: actix_web::Error) -> Self {
         MyError::ActixError(error.to_string())
     }
 }
 
-impl From<sqlx::error::Error> for MyError{
+impl From<sqlx::error::Error> for MyError {
     fn from(err: sqlx::error::Error) -> Self {
         MyError::DBError(err.to_string())
     }
@@ -54,14 +59,15 @@ impl From<sqlx::error::Error> for MyError{
 
 impl error::ResponseError for MyError {
     fn status_code(&self) -> StatusCode {
-        match self{
+        match self {
             MyError::DBError(msg) | MyError::ActixError(msg) => StatusCode::INTERNAL_SERVER_ERROR,
             MyError::NotFoundError(_) => StatusCode::NOT_FOUND,
+            MyError::InvalidInput(_) => StatusCode::BAD_REQUEST,
         }
     }
 
     fn error_response(&self) -> HttpResponse {
-        HttpResponse::build(self.status_code()).json(MyErrorResponse{
+        HttpResponse::build(self.status_code()).json(MyErrorResponse {
             error_message: self.to_string()
         })
     }
